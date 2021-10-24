@@ -1,3 +1,4 @@
+import { IsDefined, IsInt } from 'class-validator';
 import {
   Column,
   Entity,
@@ -11,21 +12,33 @@ export class Challenge {
   id: number;
 
   @Column()
+  @IsInt()
+  @IsDefined()
   publicTransportation: number;
 
   @Column()
+  @IsInt()
+  @IsDefined()
   plug: number;
 
   @Column()
+  @IsInt()
+  @IsDefined()
   cleanTable: number;
 
   @Column()
+  @IsInt()
+  @IsDefined()
   tumbler: number;
 
   @Column()
+  @IsInt()
+  @IsDefined()
   separateCollection: number;
 
   @Column()
+  @IsInt()
+  @IsDefined()
   shoppingBasket: number;
 
   @UpdateDateColumn()
