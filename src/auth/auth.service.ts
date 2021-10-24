@@ -46,33 +46,33 @@ export class AuthService {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const accessory = this.accessoryRepository.create();
-
-    const challenge = this.challengeRepository.create({
-      publicTransportation: 0,
-      plug: 0,
-      cleanTable: 0,
-      tumbler: 0,
-      separateCollection: 0,
-      shoppingBasket: 0,
-    });
-
-    let user = this.userRepository.create({
-      email,
-      password: hashedPassword,
-      nickname,
-      profileImageUrl,
-      accessory,
-      challenge,
-    });
-
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    let user;
     try {
+      const accessory = this.accessoryRepository.create();
       await queryRunner.manager.save(accessory);
+
+      const challenge = this.challengeRepository.create({
+        publicTransportation: 0,
+        plug: 0,
+        cleanTable: 0,
+        tumbler: 0,
+        separateCollection: 0,
+        shoppingBasket: 0,
+      });
       await queryRunner.manager.save(challenge);
+
+      user = this.userRepository.create({
+        email,
+        password: hashedPassword,
+        nickname,
+        profileImageUrl,
+        accessory: accessory,
+        challenge: challenge,
+      });
       user = await queryRunner.manager.save(user);
 
       await queryRunner.commitTransaction();
