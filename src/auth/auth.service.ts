@@ -23,7 +23,7 @@ export class AuthService {
     private challengeRepository: Repository<Challenge>,
   ) {}
 
-  async findEmail(email: string) {
+  async findEmail(email: string): Promise<void> {
     const isUserExist = await this.userRepository.findOne({ email });
     if (isUserExist) {
       throw new ConflictException('이미 사용하고 있는 이메일입니다.');
@@ -37,7 +37,7 @@ export class AuthService {
     }
   }
 
-  async signUp(createUserDto: CreateUserDto): Promise<User> {
+  async signUp(createUserDto: CreateUserDto) {
     const { email, password, nickname, profileImageUrl } = createUserDto;
 
     await this.findEmail(email);
