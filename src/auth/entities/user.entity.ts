@@ -12,6 +12,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 
 @Entity()
 export class User {
@@ -19,12 +20,15 @@ export class User {
   id: number;
 
   @Column({ unique: true, length: 30 })
+  @IsNotEmpty()
+  @IsEmail()
   email: string;
 
   @Column({ nullable: true, length: 30 })
   password: string;
 
   @Column({ unique: true, length: 30 })
+  @IsNotEmpty()
   nickname: string;
 
   @Column({ nullable: true })
