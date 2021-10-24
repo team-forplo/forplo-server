@@ -12,7 +12,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 
 @Entity()
 export class User {
@@ -24,7 +24,7 @@ export class User {
   @IsNotEmpty()
   email: string;
 
-  @Column({ nullable: true, length: 30 })
+  @Column({ nullable: true })
   password: string;
 
   @Column({ unique: true, length: 30 })
@@ -43,10 +43,12 @@ export class User {
 
   @OneToOne(() => Accessory)
   @JoinColumn()
+  @ValidateNested()
   accessory: Accessory;
 
   @OneToOne(() => Challenge)
   @JoinColumn()
+  @ValidateNested()
   challenge: Challenge;
 
   @OneToMany(() => Plogging, (plogging) => plogging.user)
