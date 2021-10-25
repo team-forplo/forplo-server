@@ -1,3 +1,6 @@
+import { User } from './entities/user.entity';
+import { JwtAuthGuard } from './jwt/jwt.guard';
+import { SignInUserDto } from './dto/signin-user.dto';
 import { EmailUserDto } from './dto/email-user.dto';
 import { SuccessInterceptor } from './../common/interceptors/success.interceptor';
 import {
@@ -8,27 +11,43 @@ import {
   Patch,
   Param,
   Delete,
-  ParseIntPipe,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CurrentUser } from 'src/common/decorators/user.decorator';
 
 @Controller('auth')
 @UseInterceptors(SuccessInterceptor)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiBearerAuth('accesskey')
+  @ApiResponse({
+    status: 200,
+    description: '회원 정보 조회 성공',
+  })
+  @ApiResponse({
+    status: 401,
+    description: '회원 정보 조회 실패',
+  })
+  @ApiOperation({ summary: '회원 정보 조회' })
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.authService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.authService.findOne(+id);
+  findOne(@CurrentUser() user: User) {
+    const { id, email, nickname, profileImageUrl } = user;
+    return {
+      message: '회원 정보 조회 성공',
+      data: {
+        id,
+        email,
+        nickname,
+        profileImageUrl,
+      },
+    };
   }
 
   @Patch(':id')
@@ -39,44 +58,6 @@ export class AuthController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.authService.remove(+id);
-  }
-
-  @ApiResponse({
-    status: 201,
-    description: '사용 가능한 이메일',
-  })
-  @ApiResponse({
-    status: 400,
-    description: '입력값 부족',
-  })
-  @ApiResponse({
-    status: 409,
-    description: '이메일 중복',
-  })
-  @ApiOperation({ summary: '이메일 중복 검사' })
-  @Post('/email')
-  async findEmail(@Body() emailUserDto: EmailUserDto) {
-    await this.authService.findEmail(emailUserDto.email);
-    return { message: '사용 가능한 이메일입니다.' };
-  }
-
-  @ApiResponse({
-    status: 201,
-    description: '사용 가능한 닉네임',
-  })
-  @ApiResponse({
-    status: 400,
-    description: '입력값 부족',
-  })
-  @ApiResponse({
-    status: 409,
-    description: '닉네임 중복',
-  })
-  @ApiOperation({ summary: '닉네임 중복 검사' })
-  @Get('/nickname/:nickname')
-  async findNickname(@Param('nickname') nickname: string) {
-    await this.authService.findNickname(nickname);
-    return { message: '사용 가능한 닉네임입니다.' };
   }
 
   @ApiResponse({
@@ -101,5 +82,65 @@ export class AuthController {
         id: user.id,
       },
     };
+  }
+
+  @ApiResponse({
+    status: 201,
+    description: '로그인 성공',
+  })
+  @ApiResponse({
+    status: 400,
+    description: '입력값 부족',
+  })
+  @ApiResponse({
+    status: 401,
+    description: '로그인 실패',
+  })
+  @ApiOperation({ summary: '로그인' })
+  @Post('/signin')
+  async signIn(@Body() signInUserDto: SignInUserDto) {
+    const token = await this.authService.signIn(signInUserDto);
+    return {
+      message: '로그인 성공',
+      data: token,
+    };
+  }
+
+  @ApiResponse({
+    status: 201,
+    description: '사용 가능한 이메일',
+  })
+  @ApiResponse({
+    status: 400,
+    description: '입력값 부족',
+  })
+  @ApiResponse({
+    status: 409,
+    description: '이메일 중복',
+  })
+  @ApiOperation({ summary: '이메일 중복 검사' })
+  @Post('/email')
+  async findEmail(@Body() emailUserDto: EmailUserDto) {
+    await this.authService.findEmail(emailUserDto.email);
+    return { message: '사용 가능한 이메일입니다.' };
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: '사용 가능한 닉네임',
+  })
+  @ApiResponse({
+    status: 400,
+    description: '입력값 부족',
+  })
+  @ApiResponse({
+    status: 409,
+    description: '닉네임 중복',
+  })
+  @ApiOperation({ summary: '닉네임 중복 검사' })
+  @Get('/nickname/:nickname')
+  async findNickname(@Param('nickname') nickname: string) {
+    await this.authService.findNickname(nickname);
+    return { message: '사용 가능한 닉네임입니다.' };
   }
 }
