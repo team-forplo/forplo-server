@@ -20,7 +20,7 @@ export class AuthService {
     private connection: Connection,
 
     private jwtService: JwtService,
-     
+
     @InjectRepository(User)
     private userRepository: Repository<User>,
 

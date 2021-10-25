@@ -48,6 +48,7 @@ export class AuthController {
         profileImageUrl,
       },
     };
+  }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
@@ -142,3 +143,4 @@ export class AuthController {
     await this.authService.findNickname(nickname);
     return { message: '사용 가능한 닉네임입니다.' };
   }
+}
