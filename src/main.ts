@@ -13,6 +13,17 @@ async function bootstrap() {
     .setTitle('Forplo REST API')
     .setDescription('The forplo API description')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'JWT token 입력',
+        in: 'header',
+      },
+      'accesskey',
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

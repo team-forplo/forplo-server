@@ -31,7 +31,7 @@ export class User {
   email: string;
 
   @ApiProperty({
-    example: '123456',
+    example: '1234',
     description: '비밀번호',
     required: false,
   })

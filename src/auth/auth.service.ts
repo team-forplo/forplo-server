@@ -1,17 +1,25 @@
+import { SignInUserDto } from './dto/signin-user.dto';
 import { Challenge } from './../challenges/entities/challenge.entity';
 import { Accessory } from './../accessories/entities/accessory.entity';
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Connection, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
     private connection: Connection,
+
+    private jwtService: JwtService,
 
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -85,12 +93,27 @@ export class AuthService {
     return user;
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  async signIn(signInUserDto: SignInUserDto) {
+    const { email, password } = signInUserDto;
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+    const user = await this.userRepository.findOne({ email });
+    if (!user) {
+      throw new UnauthorizedException('아직 포플러에 가입하지 않으셨어요!');
+    }
+
+    const isPasswordValidated: boolean = await bcrypt.compare(
+      password,
+      user.password,
+    );
+
+    if (!isPasswordValidated) {
+      throw new UnauthorizedException('비밀번호가 잘못되었어요.');
+    }
+
+    const payload = { email: email, sub: user.id };
+    return {
+      token: this.jwtService.sign(payload),
+    };
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
