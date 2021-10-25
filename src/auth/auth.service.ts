@@ -31,7 +31,7 @@ export class AuthService {
     private challengeRepository: Repository<Challenge>,
   ) {}
 
-  async findEmail(email: string): Promise<void> {
+  async findEmail(email: string) {
     const isUserExist = await this.userRepository.findOne({ email });
     if (isUserExist) {
       throw new ConflictException('이미 사용하고 있는 이메일입니다.');
@@ -43,6 +43,11 @@ export class AuthService {
     if (isUserExist) {
       throw new ConflictException('이미 사용하고 있는 닉네임입니다.');
     }
+  }
+
+  async uploadProfileImage(file: any) {
+    const imageUrl = `https://forplo-bucket.s3.ap-northeast-2.amazonaws.com/${file.key}`;
+    return imageUrl;
   }
 
   async signUp(createUserDto: CreateUserDto) {

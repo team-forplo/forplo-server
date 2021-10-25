@@ -13,12 +13,20 @@ import {
   Delete,
   UseInterceptors,
   UseGuards,
+  UploadedFile,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators/user.decorator';
+import { AmazonS3FileInterceptor } from 'nestjs-multer-extended';
 
 @Controller('auth')
 @UseInterceptors(SuccessInterceptor)
@@ -58,6 +66,41 @@ export class AuthController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.authService.remove(+id);
+  }
+
+  @Post('/upload')
+  @UseInterceptors(
+    AmazonS3FileInterceptor('image', {
+      dynamicPath: 'profile',
+      randomFilename: true,
+      thumbnail: { suffix: 'thumb', width: 240, height: 240 },
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: '프로필 이미지 업로드 성공',
+  })
+  @ApiOperation({ summary: '프로필 이미지 업로드' })
+  async uploadProfileImage(@UploadedFile() file: any) {
+    const imageUrl = await this.authService.uploadProfileImage(file);
+    return {
+      message: '이미지 업로드 성공',
+      data: {
+        imageUrl,
+      },
+    };
   }
 
   @ApiResponse({
