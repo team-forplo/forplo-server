@@ -49,7 +49,8 @@ export class User {
   nickname: string;
 
   @ApiProperty({
-    example: 'http://google.com',
+    example:
+      'https://forplo-bucket.s3.ap-northeast-2.amazonaws.com/forplo/profile/99e1e2be-8160-4e58-a540-3220a2c1179a.png',
     description: '프로필 이미지 주소',
     required: false,
   })
