@@ -27,8 +27,6 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators/user.decorator';
 import { AmazonS3FileInterceptor } from 'nestjs-multer-extended';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CurrentUser } from 'src/common/decorators/user.decorator';
 
 @Controller('auth')
 @UseInterceptors(SuccessInterceptor)
@@ -153,52 +151,6 @@ export class AuthController {
 
   @ApiResponse({
     status: 201,
-    description: '회원가입 성공',
-  })
-  @ApiResponse({
-    status: 400,
-    description: '입력값 부족',
-  })
-  @ApiResponse({
-    status: 409,
-    description: '이메일 or 닉네임 중복',
-  })
-  @ApiOperation({ summary: '회원가입' })
-  @Post('/signup')
-  async signUp(@Body() createUserDto: CreateUserDto) {
-    const user = await this.authService.signUp(createUserDto);
-    return {
-      message: '회원가입 성공',
-      data: {
-        id: user.id,
-      },
-    };
-  }
-
-  @ApiResponse({
-    status: 201,
-    description: '로그인 성공',
-  })
-  @ApiResponse({
-    status: 400,
-    description: '입력값 부족',
-  })
-  @ApiResponse({
-    status: 401,
-    description: '로그인 실패',
-  })
-  @ApiOperation({ summary: '로그인' })
-  @Post('/signin')
-  async signIn(@Body() signInUserDto: SignInUserDto) {
-    const token = await this.authService.signIn(signInUserDto);
-    return {
-      message: '로그인 성공',
-      data: token,
-    };
-  }
-
-  @ApiResponse({
-    status: 201,
     description: '사용 가능한 이메일',
   })
   @ApiResponse({
@@ -234,5 +186,4 @@ export class AuthController {
     await this.authService.findNickname(nickname);
     return { message: '사용 가능한 닉네임입니다.' };
   }
-}
 }
