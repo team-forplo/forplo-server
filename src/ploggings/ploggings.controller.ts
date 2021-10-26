@@ -9,6 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { PloggingsService } from './ploggings.service';
 import { CreatePloggingDto } from './dto/create-plogging.dto';
@@ -22,6 +23,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
 import { AmazonS3FileInterceptor } from 'nestjs-multer-extended';
@@ -60,8 +62,25 @@ export class PloggingsController {
   }
 
   @Get()
-  findAll() {
-    return this.ploggingsService.findAll();
+  @ApiQuery({
+    name: 'location',
+    example: '용산',
+    required: false,
+    description: '검색어',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '피드 목록 & 상세 조회 성공 (공개 설정 된 플로깅 최신순 정렬)',
+  })
+  @ApiOperation({ summary: '피드 목록 & 상세 조회 ' })
+  async findAll(@Query('location') location: string) {
+    const ploggings = await this.ploggingsService.findAll(location);
+    return {
+      message: '피드 조회 성공',
+      data: {
+        ploggings,
+      },
+    };
   }
 
   @Get(':id')

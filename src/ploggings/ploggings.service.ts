@@ -3,12 +3,14 @@ import { Plogging } from './entities/plogging.entity';
 import { Injectable } from '@nestjs/common';
 import { CreatePloggingDto } from './dto/create-plogging.dto';
 import { UpdatePloggingDto } from './dto/update-plogging.dto';
-import { Repository } from 'typeorm';
+import { Connection, createQueryBuilder, Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class PloggingsService {
   constructor(
+    private connection: Connection,
+
     @InjectRepository(Plogging)
     private ploggingRepository: Repository<Plogging>,
   ) {}
@@ -26,8 +28,49 @@ export class PloggingsService {
     return imageUrl;
   }
 
-  findAll() {
-    return `This action returns all ploggings`;
+  async findAll(location: string) {
+    if (location) {
+      const ploggings = await this.connection
+        .getRepository(Plogging)
+        .createQueryBuilder('plogging')
+        .where('plogging.isPublic = :isPublic', { isPublic: true })
+        .andWhere('plogging.location like :location', {
+          location: `%${location}%`,
+        })
+        .orderBy('plogging.createdAt', 'DESC')
+        .leftJoinAndSelect('plogging.user', 'user')
+        .select('plogging.id')
+        .addSelect('plogging.location')
+        .addSelect('plogging.distance')
+        .addSelect('plogging.time')
+        .addSelect('plogging.imageUrl')
+        .addSelect('plogging.memo')
+        .addSelect('plogging.createdAt')
+        .addSelect('user.id')
+        .addSelect('user.nickname')
+        .addSelect('user.profileImageUrl')
+        .getRawMany();
+      return ploggings;
+    } else {
+      const ploggings = await this.connection
+        .getRepository(Plogging)
+        .createQueryBuilder('plogging')
+        .where('plogging.isPublic = :isPublic', { isPublic: true })
+        .orderBy('plogging.createdAt', 'DESC')
+        .leftJoinAndSelect('plogging.user', 'user')
+        .select('plogging.id')
+        .addSelect('plogging.location')
+        .addSelect('plogging.distance')
+        .addSelect('plogging.time')
+        .addSelect('plogging.imageUrl')
+        .addSelect('plogging.memo')
+        .addSelect('plogging.createdAt')
+        .addSelect('user.id')
+        .addSelect('user.nickname')
+        .addSelect('user.profileImageUrl')
+        .getRawMany();
+      return ploggings;
+    }
   }
 
   findOne(id: number) {

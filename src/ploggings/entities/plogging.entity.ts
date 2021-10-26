@@ -69,7 +69,7 @@ export class Plogging {
   memo: string;
 
   @ApiProperty({
-    example: false,
+    example: true,
     description: '공개 여부',
     required: true,
   })
