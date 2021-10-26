@@ -21,6 +21,11 @@ export class PloggingsService {
     return plogging;
   }
 
+  async uploadProfileImage(file: any) {
+    const imageUrl = `https://forplo-bucket.s3.ap-northeast-2.amazonaws.com/${file.key}`;
+    return imageUrl;
+  }
+
   findAll() {
     return `This action returns all ploggings`;
   }
