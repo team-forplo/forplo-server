@@ -81,7 +81,7 @@ export class PloggingsService {
     return `This action updates a #${id} plogging`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} plogging`;
+  async remove(id: number) {
+    await this.ploggingRepository.delete(id);
   }
 }

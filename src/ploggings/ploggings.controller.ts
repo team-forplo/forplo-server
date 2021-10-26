@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { PloggingsService } from './ploggings.service';
 import { CreatePloggingDto } from './dto/create-plogging.dto';
@@ -23,6 +24,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
@@ -97,8 +99,20 @@ export class PloggingsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ploggingsService.remove(+id);
+  @ApiParam({
+    name: 'id',
+    example: '1',
+    required: false,
+    description: '삭제할 플로깅 아이디',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '플로깅 삭제 성공',
+  })
+  @ApiOperation({ summary: '플로깅 삭제 ' })
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.ploggingsService.remove(id);
+    return { message: '플로깅 삭제 성공' };
   }
 
   @Post('/upload')
