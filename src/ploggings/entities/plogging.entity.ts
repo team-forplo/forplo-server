@@ -18,7 +18,16 @@ export class Plogging {
   id: number;
 
   @ApiProperty({
-    example: '서울 특별시 용산구',
+    example: '서울특별시',
+    description: '시/도',
+    required: true,
+  })
+  @Column({ length: 20 })
+  @IsNotEmpty()
+  firstLocation: string;
+
+  @ApiProperty({
+    example: '서울특별시 용산구',
     description: '장소',
     required: true,
   })
