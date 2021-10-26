@@ -65,10 +65,10 @@ export class AuthService {
 
     let user;
     try {
-      const accessory = this.accessoryRepository.create();
+      const accessory = await this.accessoryRepository.create();
       await queryRunner.manager.save(accessory);
 
-      const challenge = this.challengeRepository.create({
+      const challenge = await this.challengeRepository.create({
         publicTransportation: 0,
         plug: 0,
         cleanTable: 0,
