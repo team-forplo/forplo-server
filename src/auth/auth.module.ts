@@ -34,5 +34,6 @@ import { MulterExtendedModule } from 'nestjs-multer-extended';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
+  exports: [TypeOrmModule],
 })
 export class AuthModule {}

@@ -1,3 +1,4 @@
+import { User } from './../auth/entities/user.entity';
 import { Plogging } from './entities/plogging.entity';
 import { Injectable } from '@nestjs/common';
 import { CreatePloggingDto } from './dto/create-plogging.dto';
@@ -12,8 +13,12 @@ export class PloggingsService {
     private ploggingRepository: Repository<Plogging>,
   ) {}
 
-  create(createPloggingDto: CreatePloggingDto) {
-    return 'This action adds a new plogging';
+  async create(createPloggingDto: CreatePloggingDto, user: User) {
+    const plogging = await this.ploggingRepository.save({
+      ...createPloggingDto,
+      user,
+    });
+    return plogging;
   }
 
   findAll() {
