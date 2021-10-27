@@ -1,10 +1,17 @@
 import { Plogging } from './../../ploggings/entities/plogging.entity';
 import { User } from './../../auth/entities/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { IsNotEmpty } from 'class-validator';
 
 export enum CheeringType {
-  FLAG = 'flag',
   HEART = 'heart',
+  FLAG = 'flag',
   SCORE = 'score',
   GOOD = 'good',
   KISS = 'kiss',
@@ -17,17 +24,20 @@ export class Cheering {
 
   @Column({
     type: 'enum',
-    enum: ['flag', 'heart', 'score', 'good', 'kiss'],
-    default: 'flag',
+    enum: ['heart', 'flag', 'score', 'good', 'kiss'],
+    default: 'heart',
   })
+  @IsNotEmpty()
   type: CheeringType;
 
-  @Column()
-  createdAt: string;
+  @CreateDateColumn()
+  createdAt: Date;
 
-  @ManyToOne(() => User, (user) => user.cheering)
+  @ManyToOne(() => User, (user) => user.cheering, { nullable: false })
   user: User;
 
-  @ManyToOne(() => Plogging, (plogging) => plogging.cheering)
+  @ManyToOne(() => Plogging, (plogging) => plogging.cheering, {
+    nullable: false,
+  })
   plogging: Plogging;
 }
