@@ -3,12 +3,18 @@ import {
   Get,
   Post,
   Body,
-  Param,
   Delete,
   UseGuards,
   UseInterceptors,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { SuccessInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CheeringService } from './cheering.service';
@@ -51,6 +57,12 @@ export class CheeringController {
   }
 
   @Get()
+  @ApiQuery({
+    name: 'plogging-id',
+    example: 1,
+    required: true,
+    description: '플로깅 아이디',
+  })
   @ApiResponse({
     status: 200,
     description: '좋아요 수 조회 성공',
@@ -65,10 +77,10 @@ export class CheeringController {
   })
   @ApiOperation({ summary: '좋아요 수 조회' })
   async findAll(
-    @Body() createCheeringDto: CreateCheeringDto,
+    @Query('plogging-id', ParseIntPipe) ploggingId: number,
     @CurrentUser() user: User,
   ) {
-    const data = await this.cheeringService.findAll(createCheeringDto, user);
+    const data = await this.cheeringService.findAll(ploggingId, user);
     return {
       message: '좋아요 수 조회 성공',
       data,
