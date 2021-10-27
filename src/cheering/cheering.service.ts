@@ -42,17 +42,15 @@ export class CheeringService {
     return cheering;
   }
 
-  async findAll(createCheeringDto: CreateCheeringDto, user: User) {
+  async findAll(ploggingId: number, user: User) {
     const cheeringCount = await this.connection
       .getRepository(Cheering)
       .createQueryBuilder('cheering')
       .leftJoinAndSelect('cheering.plogging', 'plogging')
-      .where('plogging.id = :id', { id: createCheeringDto.ploggingId })
+      .where('plogging.id = :id', { id: ploggingId })
       .getCount();
 
-    const plogging = await this.ploggingRepository.findOne(
-      createCheeringDto.ploggingId,
-    );
+    const plogging = await this.ploggingRepository.findOne(ploggingId);
     if (!plogging) {
       throw new NotFoundException('플로깅을 찾을 수 없습니다.');
     }
