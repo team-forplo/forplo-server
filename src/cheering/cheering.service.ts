@@ -2,14 +2,15 @@ import { User } from './../auth/entities/user.entity';
 import { Cheering, CheeringType } from './entities/cheering.entity';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCheeringDto } from './dto/create-cheering.dto';
-import { UpdateCheeringDto } from './dto/update-cheering.dto';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Plogging } from 'src/ploggings/entities/plogging.entity';
 
 @Injectable()
 export class CheeringService {
   constructor(
+    private connection: Connection,
+
     @InjectRepository(Cheering)
     private cheeringRepository: Repository<Cheering>,
 
@@ -41,16 +42,26 @@ export class CheeringService {
     return cheering;
   }
 
-  findAll() {
-    return `This action returns all cheering`;
-  }
+  async findAll(createCheeringDto: CreateCheeringDto, user: User) {
+    const cheeringCount = await this.connection
+      .getRepository(Cheering)
+      .createQueryBuilder('cheering')
+      .leftJoinAndSelect('cheering.plogging', 'plogging')
+      .where('plogging.id = :id', { id: createCheeringDto.ploggingId })
+      .getCount();
 
-  findOne(id: number) {
-    return `This action returns a #${id} cheering`;
-  }
-
-  update(id: number, updateCheeringDto: UpdateCheeringDto) {
-    return `This action updates a #${id} cheering`;
+    const plogging = await this.ploggingRepository.findOne(
+      createCheeringDto.ploggingId,
+    );
+    const cheering = await this.cheeringRepository.findOne({
+      plogging,
+      user,
+    });
+    const isUserCheering = cheering ? true : false;
+    return {
+      cheeringCount,
+      isUserCheering,
+    };
   }
 
   remove(id: number) {

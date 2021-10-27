@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseGuards,
@@ -14,7 +13,6 @@ import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { SuccessInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CheeringService } from './cheering.service';
 import { CreateCheeringDto } from './dto/create-cheering.dto';
-import { UpdateCheeringDto } from './dto/update-cheering.dto';
 import { CurrentUser } from 'src/common/decorators/user.decorator';
 import { User } from 'src/auth/entities/user.entity';
 
@@ -49,21 +47,24 @@ export class CheeringController {
   }
 
   @Get()
-  findAll() {
-    return this.cheeringService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cheeringService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateCheeringDto: UpdateCheeringDto,
+  @ApiResponse({
+    status: 200,
+    description: '좋아요 수 조회 성공',
+  })
+  @ApiResponse({
+    status: 400,
+    description: '입력값 부족',
+  })
+  @ApiOperation({ summary: '좋아요 수 조회' })
+  async findAll(
+    @Body() createCheeringDto: CreateCheeringDto,
+    @CurrentUser() user: User,
   ) {
-    return this.cheeringService.update(+id, updateCheeringDto);
+    const data = await this.cheeringService.findAll(createCheeringDto, user);
+    return {
+      message: '좋아요 수 조회 성공',
+      data,
+    };
   }
 
   @Delete(':id')

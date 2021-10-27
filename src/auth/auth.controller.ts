@@ -145,9 +145,7 @@ export class AuthController {
     const token = await this.authService.signIn(signInUserDto);
     return {
       message: '로그인 성공',
-      data: {
-        token,
-      },
+      data: token,
     };
   }
 
