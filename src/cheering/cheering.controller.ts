@@ -32,6 +32,10 @@ export class CheeringController {
     status: 400,
     description: '입력값 부족',
   })
+  @ApiResponse({
+    status: 404,
+    description: '좋아요 실패',
+  })
   @ApiOperation({ summary: '좋아요' })
   async create(
     @Body() createCheeringDto: CreateCheeringDto,
@@ -55,6 +59,10 @@ export class CheeringController {
     status: 400,
     description: '입력값 부족',
   })
+  @ApiResponse({
+    status: 404,
+    description: '좋아요 수 조회 실패',
+  })
   @ApiOperation({ summary: '좋아요 수 조회' })
   async findAll(
     @Body() createCheeringDto: CreateCheeringDto,
@@ -67,8 +75,27 @@ export class CheeringController {
     };
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cheeringService.remove(+id);
+  @Delete()
+  @ApiResponse({
+    status: 200,
+    description: '좋아요 취소 성공',
+  })
+  @ApiResponse({
+    status: 400,
+    description: '입력값 부족',
+  })
+  @ApiResponse({
+    status: 404,
+    description: '좋아요 취소 실패',
+  })
+  @ApiOperation({ summary: '좋아요 취소' })
+  async remove(
+    @Body() createCheeringDto: CreateCheeringDto,
+    @CurrentUser() user: User,
+  ) {
+    await this.cheeringService.remove(createCheeringDto, user);
+    return {
+      message: '좋아요 취소 성공',
+    };
   }
 }

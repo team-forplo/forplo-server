@@ -53,6 +53,9 @@ export class CheeringService {
     const plogging = await this.ploggingRepository.findOne(
       createCheeringDto.ploggingId,
     );
+    if (!plogging) {
+      throw new NotFoundException('플로깅을 찾을 수 없습니다.');
+    }
     const cheering = await this.cheeringRepository.findOne({
       plogging,
       user,
@@ -64,7 +67,17 @@ export class CheeringService {
     };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cheering`;
+  async remove(createCheeringDto: CreateCheeringDto, user: User) {
+    const plogging = await this.ploggingRepository.findOne(
+      createCheeringDto.ploggingId,
+    );
+    if (!plogging) {
+      throw new NotFoundException('플로깅을 찾을 수 없습니다.');
+    }
+    await this.cheeringRepository.delete({
+      type: CheeringType.HEART,
+      plogging,
+      user,
+    });
   }
 }
