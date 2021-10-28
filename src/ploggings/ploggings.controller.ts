@@ -63,6 +63,38 @@ export class PloggingsController {
     };
   }
 
+  @Get('/my')
+  @ApiResponse({
+    status: 200,
+    description: '내 플로깅 목록 & 상세 조회 성공',
+  })
+  @ApiOperation({ summary: '내 플로깅 목록 & 상세 조회 ' })
+  async findAllMy(@CurrentUser() user: User) {
+    const ploggings = await this.ploggingsService.findAllMy(user);
+    return {
+      message: '내 플로깅 목록 & 상세 조회 성공',
+      data: {
+        ploggings,
+      },
+    };
+  }
+
+  @Get('/summary')
+  @ApiResponse({
+    status: 200,
+    description: '마이페이지 요약 정보 조회 성공',
+  })
+  @ApiOperation({ summary: '마이페이지 요약 정보 조회' })
+  async findSummary(@CurrentUser() user: User) {
+    const summary = await this.ploggingsService.findSummary(user);
+    return {
+      message: '마이페이지 요약 정보 조회 성공',
+      data: {
+        ...summary,
+      },
+    };
+  }
+
   @Get()
   @ApiQuery({
     name: 'location',

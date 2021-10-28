@@ -33,11 +33,13 @@ export class Cheering {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => User, (user) => user.cheering, { nullable: false })
+  @ManyToOne(() => User, (user) => user.cheering, {
+    onDelete: 'SET NULL',
+  })
   user: User;
 
   @ManyToOne(() => Plogging, (plogging) => plogging.cheering, {
-    nullable: false,
+    onDelete: 'SET NULL',
   })
   plogging: Plogging;
 }
