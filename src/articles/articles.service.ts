@@ -1,7 +1,5 @@
 import { Article } from './entities/article.entity';
 import { Injectable } from '@nestjs/common';
-import { CreateArticleDto } from './dto/create-article.dto';
-import { UpdateArticleDto } from './dto/update-article.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -11,23 +9,24 @@ export class ArticlesService {
     @InjectRepository(Article)
     private articleRepository: Repository<Article>,
   ) {}
-  create(createArticleDto: CreateArticleDto) {
-    return 'This action adds a new article';
+
+  getToday() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const date = today.getDate();
+    return year + '-' + month + '-' + date;
   }
 
-  findAll() {
-    return `This action returns all articles`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} article`;
-  }
-
-  update(id: number, updateArticleDto: UpdateArticleDto) {
-    return `This action updates a #${id} article`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} article`;
+  async findAll() {
+    const articles = await this.articleRepository
+      .createQueryBuilder('article')
+      .where('article.postedAt <= :today', {
+        today: this.getToday(),
+      })
+      .orderBy('article.postedAt', 'DESC')
+      .limit(6)
+      .getMany();
+    return articles;
   }
 }

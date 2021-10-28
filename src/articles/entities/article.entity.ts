@@ -14,6 +14,6 @@ export class Article {
   @Column()
   url: string;
 
-  @Column()
+  @Column({ type: 'date' })
   postedAt: Date;
 }
