@@ -82,7 +82,9 @@ export class Plogging {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.ploggings, { nullable: false })
+  @ManyToOne(() => User, (user) => user.ploggings, {
+    onDelete: 'SET NULL',
+  })
   user: User;
 
   @OneToMany(() => Cheering, (cheering) => cheering.plogging)
