@@ -1,3 +1,4 @@
+import { Plogging } from 'src/ploggings/entities/plogging.entity';
 import { User } from 'src/auth/entities/user.entity';
 import {
   BadRequestException,
@@ -15,18 +16,47 @@ export class ChallengesService {
   constructor(
     @InjectRepository(Challenge)
     private challengeRepository: Repository<Challenge>,
+
+    @InjectRepository(Plogging)
+    private ploggingRepository: Repository<Plogging>,
   ) {}
 
   create(createChallengeDto: CreateChallengeDto) {
     return 'This action adds a new challenge';
   }
 
-  findAll() {
-    return `This action returns all challenges`;
+  async findPloggingBadge(user: User) {
+    const ploggingCount = await this.ploggingRepository
+      .createQueryBuilder('plogging')
+      .where('plogging.userId = :userId', { userId: user.id })
+      .select('COUNT(plogging.id)', 'plogging.totalCount')
+      .addSelect('SUM(plogging.isPublic)', 'plogging.sharingCount')
+      .getRawOne();
+    return ploggingCount;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} challenge`;
+  async findOne(user: User) {
+    const ploggingCount = await this.findPloggingBadge(user);
+    const challenge = await this.challengeRepository.findOne(user.challenge.id);
+    const {
+      publicTransportation,
+      plug,
+      cleanTable,
+      tumbler,
+      separateCollection,
+      shoppingBasket,
+      updatedAt,
+    } = challenge;
+    return {
+      ...ploggingCount,
+      publicTransportation,
+      plug,
+      cleanTable,
+      tumbler,
+      separateCollection,
+      shoppingBasket,
+      updatedAt,
+    };
   }
 
   isSameDate(updatedAt: Date) {
