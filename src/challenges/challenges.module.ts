@@ -1,11 +1,15 @@
+import { PloggingsModule } from 'src/ploggings/ploggings.module';
 import { Challenge } from './entities/challenge.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ChallengesService } from './challenges.service';
 import { ChallengesController } from './challenges.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Challenge])],
+  imports: [
+    TypeOrmModule.forFeature([Challenge]),
+    forwardRef(() => PloggingsModule),
+  ],
   controllers: [ChallengesController],
   providers: [ChallengesService],
   exports: [TypeOrmModule],

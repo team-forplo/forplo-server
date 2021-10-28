@@ -31,13 +31,17 @@ export class ChallengesController {
   }
 
   @Get()
-  findAll() {
-    return this.challengesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.challengesService.findOne(+id);
+  @ApiResponse({
+    status: 200,
+    description: '챌린지 조회 성공',
+  })
+  @ApiOperation({ summary: '챌린지 조회' })
+  async findOne(@CurrentUser() user: User) {
+    const data = await this.challengesService.findOne(user);
+    return {
+      message: '챌린지 조회 성공',
+      data,
+    };
   }
 
   @Patch()
