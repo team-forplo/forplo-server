@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/auth/entities/user.entity';
 import { Repository } from 'typeorm';
-import { CreateAccessoryDto } from './dto/create-accessory.dto';
 import { UpdateAccessoryDto } from './dto/update-accessory.dto';
 import { Accessory } from './entities/accessory.entity';
 
@@ -12,23 +12,21 @@ export class AccessoriesService {
     private accessoryRepository: Repository<Accessory>,
   ) {}
 
-  create(createAccessoryDto: CreateAccessoryDto) {
-    return 'This action adds a new accessory';
+  async findOne(user: User) {
+    const accessory = await user.accessory;
+    return accessory;
   }
 
-  findAll() {
-    return `This action returns all accessories`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} accessory`;
-  }
-
-  update(id: number, updateAccessoryDto: UpdateAccessoryDto) {
-    return `This action updates a #${id} accessory`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} accessory`;
+  async update(user: User, updateAccessoryDto: UpdateAccessoryDto) {
+    const accessory = await user.accessory;
+    if (!accessory) {
+      throw new NotFoundException('악세사리가 없습니다');
+    }
+    const { head, face, hand } = updateAccessoryDto;
+    accessory.head = head;
+    accessory.face = face;
+    accessory.hand = hand;
+    const saveAccessory = await this.accessoryRepository.save(accessory);
+    return saveAccessory;
   }
 }
