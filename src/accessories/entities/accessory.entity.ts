@@ -11,7 +11,7 @@ export class Accessory {
   id: number;
 
   @Column({ nullable: true, length: 10 })
-  hair: string;
+  haead: string;
 
   @Column({ nullable: true, length: 10 })
   face: string;
