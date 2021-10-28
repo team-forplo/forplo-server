@@ -1,6 +1,6 @@
 import { User } from './../auth/entities/user.entity';
 import { Plogging } from './entities/plogging.entity';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePloggingDto } from './dto/create-plogging.dto';
 import { UpdatePloggingDto } from './dto/update-plogging.dto';
 import { Connection, createQueryBuilder, Like, Repository } from 'typeorm';
@@ -64,6 +64,7 @@ export class PloggingsService {
         .addSelect('plogging.time')
         .addSelect('plogging.imageUrl')
         .addSelect('plogging.memo')
+        .addSelect('plogging.isPublic')
         .addSelect('plogging.createdAt')
         .addSelect('user.id')
         .addSelect('user.nickname')
@@ -85,6 +86,7 @@ export class PloggingsService {
       .addSelect('plogging.time')
       .addSelect('plogging.imageUrl')
       .addSelect('plogging.memo')
+      .addSelect('plogging.isPublic')
       .addSelect('plogging.createdAt')
       .addSelect('user.id')
       .addSelect('user.nickname')
@@ -109,8 +111,14 @@ export class PloggingsService {
     return `This action returns a #${id} plogging`;
   }
 
-  update(id: number, updatePloggingDto: UpdatePloggingDto) {
-    return `This action updates a #${id} plogging`;
+  async update(id: number, isPublic: boolean) {
+    const plogging = await this.ploggingRepository.findOne(id);
+    if (!plogging) {
+      throw new NotFoundException('플로깅을 찾을 수 없습니다.');
+    }
+    plogging.isPublic = isPublic;
+    const savePlogging = await this.ploggingRepository.save(plogging);
+    return savePlogging;
   }
 
   async remove(id: number) {

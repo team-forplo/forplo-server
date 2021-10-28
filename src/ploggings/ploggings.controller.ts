@@ -11,10 +11,10 @@ import {
   UploadedFile,
   Query,
   ParseIntPipe,
+  ParseBoolPipe,
 } from '@nestjs/common';
 import { PloggingsService } from './ploggings.service';
 import { CreatePloggingDto } from './dto/create-plogging.dto';
-import { UpdatePloggingDto } from './dto/update-plogging.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { CurrentUser } from 'src/common/decorators/user.decorator';
 import { User } from 'src/auth/entities/user.entity';
@@ -123,18 +123,41 @@ export class PloggingsController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updatePloggingDto: UpdatePloggingDto,
+  @ApiParam({
+    name: 'id',
+    example: '1',
+    required: true,
+    description: '플로깅 아이디',
+  })
+  @ApiQuery({
+    name: 'is-public',
+    example: false,
+    required: true,
+    description: '공개/비공개 여부',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '플로깅 공개/비공개 변경 성공',
+  })
+  @ApiOperation({ summary: '플로깅 공개/비공개 변경' })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('is-public', ParseBoolPipe) isPublic: boolean,
   ) {
-    return this.ploggingsService.update(+id, updatePloggingDto);
+    const plogging = await this.ploggingsService.update(id, isPublic);
+    return {
+      message: '플로깅 공개/비공개 변경 성공',
+      data: {
+        isPublic: plogging.isPublic,
+      },
+    };
   }
 
   @Delete(':id')
   @ApiParam({
     name: 'id',
     example: '1',
-    required: false,
+    required: true,
     description: '삭제할 플로깅 아이디',
   })
   @ApiResponse({
