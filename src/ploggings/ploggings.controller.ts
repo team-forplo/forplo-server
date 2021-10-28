@@ -127,11 +127,6 @@ export class PloggingsController {
     };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ploggingsService.findOne(+id);
-  }
-
   @Patch(':id')
   @ApiParam({
     name: 'id',

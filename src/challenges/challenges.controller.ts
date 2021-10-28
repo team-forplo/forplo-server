@@ -15,7 +15,6 @@ import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { CurrentUser } from 'src/common/decorators/user.decorator';
 import { SuccessInterceptor } from 'src/common/interceptors/success.interceptor';
 import { ChallengesService } from './challenges.service';
-import { CreateChallengeDto } from './dto/create-challenge.dto';
 import { UpdateChallengeDto } from './dto/update-challenge.dto';
 
 @Controller('challenges')
@@ -24,11 +23,6 @@ import { UpdateChallengeDto } from './dto/update-challenge.dto';
 @UseInterceptors(SuccessInterceptor)
 export class ChallengesController {
   constructor(private readonly challengesService: ChallengesService) {}
-
-  @Post()
-  create(@Body() createChallengeDto: CreateChallengeDto) {
-    return this.challengesService.create(createChallengeDto);
-  }
 
   @Get()
   @ApiResponse({
@@ -66,10 +60,5 @@ export class ChallengesController {
       message: '챌린지 체크리스트 인증 성공',
       data: challenge,
     };
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.challengesService.remove(+id);
   }
 }
