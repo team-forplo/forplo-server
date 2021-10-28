@@ -1,4 +1,8 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateAccessoryDto } from './create-accessory.dto';
+import { PickType } from '@nestjs/swagger';
+import { Accessory } from '../entities/accessory.entity';
 
-export class UpdateAccessoryDto extends PartialType(CreateAccessoryDto) {}
+export class UpdateAccessoryDto extends PickType(Accessory, [
+  'head',
+  'face',
+  'hand',
+] as const) {}
