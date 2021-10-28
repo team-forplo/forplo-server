@@ -63,9 +63,19 @@ export class AuthController {
     return this.authService.update(+id, updateUserDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  @Delete()
+  @ApiBearerAuth('accesskey')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: '회원탈퇴 성공',
+  })
+  @ApiOperation({ summary: '회원탈퇴' })
+  async remove(@CurrentUser() user: User) {
+    await this.authService.remove(user);
+    return {
+      message: '회원탈퇴 성공',
+    };
   }
 
   @Post('/upload')
