@@ -73,6 +73,26 @@ export class PloggingsService {
     }
   }
 
+  async findAllMy(user: User) {
+    const ploggings = await this.connection
+      .getRepository(Plogging)
+      .createQueryBuilder('plogging')
+      .where('plogging.userId = :userId', { userId: user.id })
+      .leftJoinAndSelect('plogging.user', 'user')
+      .select('plogging.id')
+      .addSelect('plogging.location')
+      .addSelect('plogging.distance')
+      .addSelect('plogging.time')
+      .addSelect('plogging.imageUrl')
+      .addSelect('plogging.memo')
+      .addSelect('plogging.createdAt')
+      .addSelect('user.id')
+      .addSelect('user.nickname')
+      .addSelect('user.profileImageUrl')
+      .getRawMany();
+    return ploggings;
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} plogging`;
   }

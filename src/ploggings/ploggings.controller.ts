@@ -63,6 +63,22 @@ export class PloggingsController {
     };
   }
 
+  @Get('/my')
+  @ApiResponse({
+    status: 200,
+    description: '내 플로깅 목록 & 상세 조회 성공',
+  })
+  @ApiOperation({ summary: '내 플로깅 목록 & 상세 조회 ' })
+  async findAllMy(@CurrentUser() user: User) {
+    const ploggings = await this.ploggingsService.findAllMy(user);
+    return {
+      message: '내 플로깅 목록 & 상세 조회 성공',
+      data: {
+        ploggings,
+      },
+    };
+  }
+
   @Get()
   @ApiQuery({
     name: 'location',
