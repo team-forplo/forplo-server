@@ -93,6 +93,18 @@ export class PloggingsService {
     return ploggings;
   }
 
+  async findSummary(user: User) {
+    const summary = await this.connection
+      .getRepository(Plogging)
+      .createQueryBuilder('plogging')
+      .where('plogging.userId = :userId', { userId: user.id })
+      .select('COUNT(plogging.id)', 'totalCount')
+      .addSelect('SUM(plogging.distance)', 'totalDistance')
+      .addSelect('SUM(plogging.time)', 'totalTime')
+      .getRawOne();
+    return summary;
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} plogging`;
   }
