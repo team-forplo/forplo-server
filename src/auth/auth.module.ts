@@ -2,7 +2,7 @@ import { JwtStrategy } from './jwt/jwt.strategy';
 import { ChallengesModule } from './../challenges/challenges.module';
 import { User } from './entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { AccessoriesModule } from 'src/accessories/accessories.module';
@@ -30,7 +30,7 @@ import { MulterExtendedModule } from 'nestjs-multer-extended';
     }),
     TypeOrmModule.forFeature([User]),
     AccessoriesModule,
-    ChallengesModule,
+    forwardRef(() => ChallengesModule),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
