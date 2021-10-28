@@ -58,7 +58,7 @@ export class PloggingsController {
     return {
       message: '플로깅 생성 성공',
       data: {
-        plogging: plogging.id,
+        ploggingId: plogging.id,
       },
     };
   }
@@ -87,9 +87,7 @@ export class PloggingsController {
     const ploggings = await this.ploggingsService.findAllMy(user);
     return {
       message: '내 플로깅 목록 & 상세 조회 성공',
-      data: {
-        ploggings,
-      },
+      data: ploggings,
     };
   }
 
@@ -125,9 +123,7 @@ export class PloggingsController {
     const ploggings = await this.ploggingsService.findAll(location);
     return {
       message: '피드 조회 성공',
-      data: {
-        ploggings,
-      },
+      data: ploggings,
     };
   }
 

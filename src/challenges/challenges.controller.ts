@@ -60,9 +60,7 @@ export class ChallengesController {
     );
     return {
       message: '챌린지 체크리스트 인증 성공',
-      data: {
-        challenge,
-      },
+      data: challenge,
     };
   }
 
