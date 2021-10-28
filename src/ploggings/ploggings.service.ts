@@ -2,8 +2,7 @@ import { User } from './../auth/entities/user.entity';
 import { Plogging } from './entities/plogging.entity';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePloggingDto } from './dto/create-plogging.dto';
-import { UpdatePloggingDto } from './dto/update-plogging.dto';
-import { Connection, createQueryBuilder, Like, Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -74,11 +73,23 @@ export class PloggingsService {
     }
   }
 
+  async findFlagMap(user: User) {
+    const flagMaps = await this.ploggingRepository
+      .createQueryBuilder('plogging')
+      .where('plogging.userId = :userId', { userId: user.id })
+      .groupBy('plogging.firstLocation')
+      .select('COUNT(plogging.firstLocation)', 'totalCount')
+      .addSelect('plogging.firstLocation', 'firstLocation')
+      .getRawMany();
+    return flagMaps;
+  }
+
   async findAllMy(user: User) {
     const ploggings = await this.connection
       .getRepository(Plogging)
       .createQueryBuilder('plogging')
       .where('plogging.userId = :userId', { userId: user.id })
+      .orderBy('plogging.createdAt', 'DESC')
       .leftJoinAndSelect('plogging.user', 'user')
       .select('plogging.id')
       .addSelect('plogging.location')

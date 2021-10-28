@@ -63,6 +63,20 @@ export class PloggingsController {
     };
   }
 
+  @Get('/flag-map')
+  @ApiResponse({
+    status: 200,
+    description: '깃발 지도 조회 성공',
+  })
+  @ApiOperation({ summary: '깃발 지도 조회' })
+  async findFlagMap(@CurrentUser() user: User) {
+    const flagMaps = await this.ploggingsService.findFlagMap(user);
+    return {
+      message: '깃발 지도 조회 성공',
+      data: flagMaps,
+    };
+  }
+
   @Get('/my')
   @ApiResponse({
     status: 200,
