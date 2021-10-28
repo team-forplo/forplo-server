@@ -1,42 +1,27 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
+import { SuccessInterceptor } from 'src/common/interceptors/success.interceptor';
 import { ArticlesService } from './articles.service';
-import { CreateArticleDto } from './dto/create-article.dto';
-import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Controller('articles')
+@ApiBearerAuth('accesskey')
+@UseGuards(JwtAuthGuard)
+@UseInterceptors(SuccessInterceptor)
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
-  @Post()
-  create(@Body() createArticleDto: CreateArticleDto) {
-    return this.articlesService.create(createArticleDto);
-  }
-
   @Get()
-  findAll() {
-    return this.articlesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.articlesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto) {
-    return this.articlesService.update(+id, updateArticleDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.articlesService.remove(+id);
+  @ApiResponse({
+    status: 200,
+    description: '환경 정보 목록 조회 성공',
+  })
+  @ApiOperation({ summary: '환경 정보 목록 조회 (최신순)' })
+  async findAll() {
+    const articles = await this.articlesService.findAll();
+    return {
+      message: '환경 정보 목록 조회 성공',
+      data: articles,
+    };
   }
 }
