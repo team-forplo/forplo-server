@@ -13,6 +13,7 @@ import { ChallengesModule } from './challenges/challenges.module';
 import { PloggingsModule } from './ploggings/ploggings.module';
 import { CheeringModule } from './cheering/cheering.module';
 import { SearchModule } from './search/search.module';
+import { BookmarkModule } from './bookmark/bookmark.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { SearchModule } from './search/search.module';
     PloggingsModule,
     CheeringModule,
     SearchModule,
+    BookmarkModule,
   ],
   controllers: [AppController],
   providers: [AppService],

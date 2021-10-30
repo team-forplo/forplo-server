@@ -14,6 +14,7 @@ import {
 } from 'typeorm';
 import { IsEmail, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Bookmark } from 'src/bookmark/entities/bookmark.entity';
 
 @Entity()
 export class User {
@@ -78,4 +79,7 @@ export class User {
 
   @OneToMany(() => Cheering, (cheering) => cheering.user)
   cheering: Cheering[];
+
+  @OneToMany(() => Bookmark, (bookmark) => bookmark.user)
+  bookmark: Bookmark[];
 }
