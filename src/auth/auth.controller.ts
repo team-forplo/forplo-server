@@ -1,3 +1,4 @@
+import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { JwtAuthGuard } from './jwt/jwt.guard';
 import { SignInUserDto } from './dto/signin-user.dto';
@@ -14,6 +15,7 @@ import {
   UseInterceptors,
   UseGuards,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -22,6 +24,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators/user.decorator';
@@ -53,6 +56,32 @@ export class AuthController {
         email,
         nickname,
         profileImageUrl,
+      },
+    };
+  }
+
+  @Patch()
+  @ApiBearerAuth('accesskey')
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: '프로필 변경 성공',
+  })
+  @ApiResponse({
+    status: 400,
+    description: '입력값 부족',
+  })
+  @ApiOperation({ summary: '프로필 변경' })
+  async update(
+    @Body() updateUserDto: UpdateUserDto,
+    @CurrentUser() user: User,
+  ) {
+    const updateUser = await this.authService.update(updateUserDto, user);
+    return {
+      message: '프로필 변경 성공',
+      data: {
+        nickname: updateUser.nickname,
+        profileImageUrl: updateUser.profileImageUrl,
       },
     };
   }
