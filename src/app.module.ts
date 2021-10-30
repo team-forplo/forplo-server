@@ -12,6 +12,7 @@ import { ArticlesModule } from './articles/articles.module';
 import { ChallengesModule } from './challenges/challenges.module';
 import { PloggingsModule } from './ploggings/ploggings.module';
 import { CheeringModule } from './cheering/cheering.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CheeringModule } from './cheering/cheering.module';
     ChallengesModule,
     PloggingsModule,
     CheeringModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],
