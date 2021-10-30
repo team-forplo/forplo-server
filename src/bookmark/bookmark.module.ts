@@ -8,6 +8,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [TypeOrmModule.forFeature([Bookmark])],
   controllers: [BookmarkController],
   providers: [BookmarkService],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, BookmarkService],
 })
 export class BookmarkModule {}
