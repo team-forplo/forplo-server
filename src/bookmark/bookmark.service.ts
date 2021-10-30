@@ -1,26 +1,65 @@
-import { Injectable } from '@nestjs/common';
+import { Bookmark, BookmarkType } from 'src/bookmark/entities/bookmark.entity';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { Connection, Repository } from 'typeorm';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
-import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class BookmarkService {
-  create(createBookmarkDto: CreateBookmarkDto) {
-    return 'This action adds a new bookmark';
+  constructor(
+    private connection: Connection,
+
+    @InjectRepository(Bookmark)
+    private bookmarkRepository: Repository<Bookmark>,
+  ) {}
+
+  async create(createBookmarkDto: CreateBookmarkDto, user: User) {
+    const { type, contentId } = createBookmarkDto;
+
+    const bookmark = await this.bookmarkRepository.findOne({
+      type,
+      contentId,
+      user,
+    });
+    if (!bookmark) {
+      const saveBookmark = await this.bookmarkRepository.save({
+        type,
+        contentId,
+        user,
+      });
+      return saveBookmark;
+    }
+    return bookmark;
   }
 
-  findAll() {
-    return `This action returns all bookmark`;
+  async findAll(type: BookmarkType, user: User) {
+    if (!type) {
+      throw new BadRequestException('타입은 필수입니다.');
+    }
+
+    const bookmarks = await this.bookmarkRepository.find({
+      type,
+      user,
+    });
+    return bookmarks;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} bookmark`;
+  async findOne(contentId: number, user: User) {
+    const bookmark = await this.bookmarkRepository.findOne({
+      contentId,
+      user,
+    });
+    return bookmark;
   }
 
-  update(id: number, updateBookmarkDto: UpdateBookmarkDto) {
-    return `This action updates a #${id} bookmark`;
-  }
+  async remove(createBookmarkDto: CreateBookmarkDto, user: User) {
+    const { type, contentId } = createBookmarkDto;
 
-  remove(id: number) {
-    return `This action removes a #${id} bookmark`;
+    await this.bookmarkRepository.delete({
+      type,
+      contentId,
+      user,
+    });
   }
 }
