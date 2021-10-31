@@ -125,7 +125,15 @@ export class PloggingsService {
       .addSelect('SUM(plogging.distance)', 'totalDistance')
       .addSelect('SUM(plogging.time)', 'totalTime')
       .getRawOne();
-    return summary;
+    let { totalCount, totalDistance, totalTime } = summary || {};
+    totalCount = totalCount ? Number(totalCount) : 0;
+    totalTime = totalTime ? Number(totalTime) : 0;
+    totalDistance = totalDistance ? Number(totalDistance) : 0;
+    return {
+      totalCount,
+      totalDistance,
+      totalTime,
+    };
   }
 
   findOne(id: number) {
