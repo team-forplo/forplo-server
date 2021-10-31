@@ -5,6 +5,7 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Connection, Repository } from 'typeorm';
@@ -121,8 +122,17 @@ export class AuthService {
     };
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} auth`;
+  async update(updateUserDto: UpdateUserDto, user: User) {
+    const { nickname, profileImageUrl } = updateUserDto;
+    if (nickname === user.nickname) {
+      return user;
+    }
+    await this.findNickname(nickname);
+
+    user.nickname = nickname;
+    user.profileImageUrl = profileImageUrl;
+    const updateUser = await this.userRepository.save(user);
+    return updateUser;
   }
 
   async remove(user: User) {
