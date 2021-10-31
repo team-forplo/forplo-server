@@ -74,13 +74,23 @@ export class PloggingsService {
   }
 
   async findFlagMap(user: User) {
-    const flagMaps = await this.ploggingRepository
+    let flagMaps = await this.ploggingRepository
       .createQueryBuilder('plogging')
       .where('plogging.userId = :userId', { userId: user.id })
       .groupBy('plogging.firstLocation')
       .select('COUNT(plogging.firstLocation)', 'totalCount')
       .addSelect('plogging.firstLocation', 'firstLocation')
       .getRawMany();
+
+    flagMaps = flagMaps.map((item) => {
+      const { firstLocation } = item || {};
+      let { totalCount } = item || {};
+      totalCount = totalCount ? Number(totalCount) : totalCount;
+      return {
+        firstLocation,
+        totalCount,
+      };
+    });
     return flagMaps;
   }
 
