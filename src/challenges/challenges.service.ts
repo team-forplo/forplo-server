@@ -29,8 +29,8 @@ export class ChallengesService {
     const ploggingCount = await this.ploggingRepository
       .createQueryBuilder('plogging')
       .where('plogging.userId = :userId', { userId: user.id })
-      .select('COUNT(plogging.id)', 'plogging.totalCount')
-      .addSelect('SUM(plogging.isPublic)', 'plogging.sharingCount')
+      .select('COUNT(plogging.id)', 'ploggingTotalCount')
+      .addSelect('SUM(plogging.isPublic)', 'ploggingSharingCount')
       .getRawOne();
     return ploggingCount;
   }
@@ -47,8 +47,16 @@ export class ChallengesService {
       shoppingBasket,
       updatedAt,
     } = challenge;
+
+    let { ploggingTotalCount, ploggingSharingCount } = ploggingCount || {};
+    ploggingTotalCount = ploggingTotalCount ? Number(ploggingTotalCount) : 0;
+    ploggingSharingCount = ploggingSharingCount
+      ? Number(ploggingSharingCount)
+      : 0;
+
     return {
-      ...ploggingCount,
+      ploggingTotalCount,
+      ploggingSharingCount,
       publicTransportation,
       plug,
       cleanTable,
