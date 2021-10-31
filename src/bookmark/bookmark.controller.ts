@@ -52,30 +52,6 @@ export class BookmarkController {
     };
   }
 
-  @Get()
-  @ApiQuery({
-    name: 'type',
-    example: '국내여행',
-    required: true,
-    description: '북마크 타입 (국내여행, 추천코스, 둘레길)',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '내 북마크 조회 성공',
-  })
-  @ApiResponse({
-    status: 400,
-    description: '입력값 부족',
-  })
-  @ApiOperation({ summary: '내 북마크 조회' })
-  async findAll(@Query('type') type: BookmarkType, @CurrentUser() user: User) {
-    const data = await this.bookmarkService.findAll(type, user);
-    return {
-      message: '내 북마크 조회 성공',
-      data,
-    };
-  }
-
   @Delete()
   @ApiResponse({
     status: 201,

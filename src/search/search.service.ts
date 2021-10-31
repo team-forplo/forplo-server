@@ -6,9 +6,17 @@ import { areaCodeMapper } from './mapper/area.mapper';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { User } from 'src/auth/entities/user.entity';
+import { Bookmark, BookmarkType } from 'src/bookmark/entities/bookmark.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 @Injectable()
 export class SearchService {
-  constructor(private readonly bookmarkService: BookmarkService) {}
+  constructor(
+    private readonly bookmarkService: BookmarkService,
+
+    @InjectRepository(Bookmark)
+    private bookmarkRepository: Repository<Bookmark>,
+  ) {}
 
   private readonly BASE_URL =
     'http://api.visitkorea.or.kr/openapi/service/rest';
@@ -229,6 +237,51 @@ export class SearchService {
       mapy,
       overview,
       estiDecoDivCd,
+    };
+  }
+
+  // 북마크 조회
+  async findAll(type: BookmarkType, user: User) {
+    if (!type) {
+      throw new BadRequestException('타입은 필수입니다.');
+    }
+
+    const bookmarks = await this.bookmarkRepository.find({
+      type,
+      user,
+    });
+    return await Promise.all(
+      bookmarks.map(async (item) => {
+        const { contentId } = item;
+        return await this.findOne(contentId, user);
+      }),
+    );
+  }
+
+  // 국내여행/추천코스 검색 목록 단건 조회
+  async findOne(contentid: number, user: User) {
+    const bookmark = await this.bookmarkService.findOne(contentid, user);
+    const isBookmark = bookmark ? true : false;
+
+    const { contenttypeid, title, addr1, firstimage, firstimage2, overview } =
+      await this.detailCommon({
+        contentId: contentid,
+        defaultYN: 'Y',
+        firstImageYN: 'Y',
+        areacodeYN: 'Y',
+        addrinfoYN: 'Y',
+        overviewYN: 'Y',
+      });
+
+    return {
+      isBookmark,
+      contentid,
+      contenttypeid,
+      title,
+      addr1,
+      firstimage,
+      firstimage2,
+      overview,
     };
   }
 

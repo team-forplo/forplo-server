@@ -1,3 +1,4 @@
+import { SearchService } from './../search/search.service';
 import { Bookmark, BookmarkType } from 'src/bookmark/entities/bookmark.entity';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { Connection, Repository } from 'typeorm';
@@ -31,18 +32,6 @@ export class BookmarkService {
       return saveBookmark;
     }
     return bookmark;
-  }
-
-  async findAll(type: BookmarkType, user: User) {
-    if (!type) {
-      throw new BadRequestException('타입은 필수입니다.');
-    }
-
-    const bookmarks = await this.bookmarkRepository.find({
-      type,
-      user,
-    });
-    return bookmarks;
   }
 
   async findOne(contentId: number, user: User) {
