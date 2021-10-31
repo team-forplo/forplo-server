@@ -1,5 +1,6 @@
+import { map } from 'rxjs/operators';
 import { BookmarkService } from './../bookmark/bookmark.service';
-import { cat2Mapper } from './mapper/cat2.mapper';
+import { cat2Mapper, cat2ValueMapper } from './mapper/cat2.mapper';
 import { cat1Mapper } from './mapper/cat1.mapper';
 import { areaCodeMapper } from './mapper/area.mapper';
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -70,7 +71,7 @@ export class SearchService {
         params,
       },
     );
-    return areaBasedList.data.response.body.items.item || {};
+    return areaBasedList.data.response.body || {};
   }
 
   // 공통정보 조회
@@ -95,6 +96,17 @@ export class SearchService {
     return detailIntro.data.response.body.items.item || {};
   }
 
+  // 반복정보 조회
+  async detailInfo(params: any) {
+    const detailInfo = await axios.get(
+      `${this.BASE_URL}/KorService/detailInfo?${this.COMMON_QUERY}`,
+      {
+        params,
+      },
+    );
+    return detailInfo.data.response.body.items.item || {};
+  }
+
   // 관광지별 혼잡도 예측 집계 데이터 정보 조회
   async tarDecoList(params: any) {
     const tarDecoList = await axios.get(
@@ -114,6 +126,7 @@ export class SearchService {
       numOfRows: 310,
       arrange: 'P',
     });
+    areaBaseItemList = areaBaseItemList.items.item || {};
 
     // 오늘의 추천 여행지 목록 선택 알고리즘은 추후 변경해야 함.
     const todayDate = new Date().getDate();
@@ -219,7 +232,7 @@ export class SearchService {
     };
   }
 
-  // 국내여행 검색 목록 조회
+  // 국내여행 검색 목록 조회 (검색어 있음/없음 둘 다 구현)
   async findKeywordList(
     rows: number,
     page: number,
@@ -229,10 +242,6 @@ export class SearchService {
     cat2: string,
     user: User,
   ) {
-    if (!keyword) {
-      throw new BadRequestException('검색어는 필수입니다.');
-    }
-
     areaCode = areaCode ? areaCodeMapper[areaCode] : areaCode;
     cat1 = cat1 ? cat1Mapper[cat1] : cat1;
     cat2 = cat2 ? cat2Mapper[cat2] : cat2;
@@ -243,21 +252,35 @@ export class SearchService {
       );
     }
 
+    let searchList;
+    if (keyword) {
+      searchList = await this.searchKeyword({
+        numOfRows: rows,
+        pageNo: page,
+        arrange: 'P',
+        areaCode,
+        cat1,
+        cat2,
+        keyword,
+      });
+    } else {
+      searchList = await this.areaBasedList({
+        numOfRows: rows,
+        pageNo: page,
+        arrange: 'P',
+        areaCode,
+        cat1,
+        cat2,
+      });
+    }
+
     // 키워드 검색 조회 (조회순)
-    const { items, pageNo, numOfRows, totalCount } = await this.searchKeyword({
-      numOfRows: rows,
-      pageNo: page,
-      arrange: 'P',
-      areaCode,
-      cat1,
-      cat2,
-      keyword,
-    });
-    const searchKeyword = items.item || {};
+    const { items, pageNo, numOfRows, totalCount } = searchList;
+    const searchItems = items.item || {};
 
     // 개요 포함한 목록
-    const searchKeywordDetail = await Promise.all(
-      searchKeyword.map(async (item) => {
+    const searchDetails = await Promise.all(
+      searchItems.map(async (item) => {
         const {
           contentid,
           contenttypeid,
@@ -294,7 +317,139 @@ export class SearchService {
       totalCount,
       pageNo,
       numOfRows,
-      items: searchKeywordDetail,
+      items: searchDetails,
+    };
+  }
+
+  // 추천코스 상세 조회
+  async findCourseDetail(contentid: number, user: User) {
+    const bookmark = await this.bookmarkService.findOne(contentid, user);
+    const isBookmark = bookmark ? true : false;
+
+    const { contenttypeid, title, firstimage, firstimage2, cat2, overview } =
+      await this.detailCommon({
+        contentId: contentid,
+        defaultYN: 'Y',
+        firstImageYN: 'Y',
+        catcodeYN: 'Y',
+        overviewYN: 'Y',
+      });
+
+    const { distance, taketime } = await this.detailIntro({
+      contentId: contentid,
+      contentTypeId: contenttypeid,
+    });
+
+    const detailInfo = await this.detailInfo({
+      contentId: contentid,
+      contentTypeId: contenttypeid,
+    });
+    const subdetailimgList = [];
+    const courseDetailInfos = [];
+    detailInfo.map((item) => {
+      const { subname, subdetailoverview, subcontentid, subdetailimg } =
+        item || {};
+
+      subdetailimgList.push({
+        subcontentid,
+        subdetailimg,
+      });
+      courseDetailInfos.push({
+        subname,
+        subdetailoverview,
+      });
+    });
+    return {
+      isBookmark,
+      contentid,
+      title,
+      cat2: cat2ValueMapper[cat2],
+      firstimage,
+      firstimage2,
+      overview,
+      distance,
+      taketime,
+      subdetailimgList,
+      courseDetailInfo: courseDetailInfos,
+    };
+  }
+
+  // 추천코스 검색 목록 조회 (검색어 있음/없음 둘 다 구현)
+  async findCourseList(
+    rows: number,
+    page: number,
+    keyword: string,
+    areaCode: string,
+    cat2: string,
+    user: User,
+  ) {
+    areaCode = areaCode ? areaCodeMapper[areaCode] : areaCode;
+    cat2 = cat2 ? cat2Mapper[cat2] : cat2;
+
+    let searchList;
+    if (keyword) {
+      searchList = await this.searchKeyword({
+        numOfRows: rows,
+        pageNo: page,
+        arrange: 'P',
+        areaCode,
+        cat1: cat1Mapper.추천코스,
+        cat2,
+        keyword,
+      });
+    } else {
+      searchList = await this.areaBasedList({
+        numOfRows: rows,
+        pageNo: page,
+        arrange: 'P',
+        areaCode,
+        cat1: cat1Mapper.추천코스,
+        cat2,
+      });
+    }
+
+    // 키워드 검색 조회 (조회순)
+    const { items, pageNo, numOfRows, totalCount } = searchList;
+    const searchItems = items.item || {};
+
+    // 개요 포함한 목록
+    const searchDetails = await Promise.all(
+      searchItems.map(async (item) => {
+        const {
+          contentid,
+          contenttypeid,
+          title,
+          addr1,
+          firstimage,
+          firstimage2,
+        } = item || {};
+
+        const bookmark = await this.bookmarkService.findOne(contentid, user);
+        const isBookmark = bookmark ? true : false;
+
+        const { overview } = await this.detailCommon({
+          contentId: contentid,
+          overviewYN: 'Y',
+        });
+
+        return {
+          isBookmark,
+          contentid,
+          contenttypeid,
+          title,
+          addr1,
+          firstimage,
+          firstimage2,
+          overview,
+        };
+      }),
+    );
+
+    return {
+      totalCount,
+      pageNo,
+      numOfRows,
+      items: searchDetails,
     };
   }
 }

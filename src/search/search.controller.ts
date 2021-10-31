@@ -27,6 +27,87 @@ import { SearchService } from './search.service';
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
+  @Get('/course/:contentid')
+  @ApiParam({
+    name: 'contentid',
+    example: 2361026,
+    required: true,
+    description: '콘텐츠 아이디',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '추천코스 상세 정보 조회 성공',
+  })
+  @ApiOperation({ summary: '추천코스 상세 정보 조회' })
+  async findCourseDetail(
+    @Param('contentid', ParseIntPipe) contentid: number,
+    @CurrentUser() user: User,
+  ) {
+    const data = await this.searchService.findCourseDetail(contentid, user);
+    return {
+      message: '추천코스 상세 정보 조회 성공',
+      data,
+    };
+  }
+
+  @Get('/course')
+  @ApiQuery({
+    name: 'numOfRows',
+    example: 2,
+    required: true,
+    description: '한 페이지 결과 수',
+  })
+  @ApiQuery({
+    name: 'pageNo',
+    example: 1,
+    required: true,
+    description: '페이지 번호',
+  })
+  @ApiQuery({
+    name: 'keyword',
+    example: '제주',
+    required: false,
+    description: '검색어',
+  })
+  @ApiQuery({
+    name: 'areaCode',
+    example: '제주도',
+    required: false,
+    description: '지역',
+  })
+  @ApiQuery({
+    name: 'cat2',
+    example: '가족코스',
+    required: false,
+    description: '중분류',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '추천코스 검색 목록 조회 성공',
+  })
+  @ApiOperation({ summary: '추천코스 검색 목록 조회' })
+  async findCourseList(
+    @Query('numOfRows', ParseIntPipe) rows: number,
+    @Query('pageNo', ParseIntPipe) page: number,
+    @Query('keyword') keyword: string,
+    @Query('areaCode') areaCode: string,
+    @Query('cat2') cat2: string,
+    @CurrentUser() user: User,
+  ) {
+    const data = await this.searchService.findCourseList(
+      rows,
+      page,
+      keyword,
+      areaCode,
+      cat2,
+      user,
+    );
+    return {
+      message: '추천코스 검색 목록 조회',
+      data,
+    };
+  }
+
   @Get('/top')
   @ApiResponse({
     status: 200,
@@ -41,7 +122,7 @@ export class SearchController {
     };
   }
 
-  @Get('/detail/:contentid')
+  @Get('/:contentid')
   @ApiParam({
     name: 'contentid',
     example: 125841,
@@ -67,7 +148,7 @@ export class SearchController {
   @Get('/')
   @ApiQuery({
     name: 'numOfRows',
-    example: 1,
+    example: 2,
     required: true,
     description: '한 페이지 결과 수',
   })
@@ -80,7 +161,7 @@ export class SearchController {
   @ApiQuery({
     name: 'keyword',
     example: '한라',
-    required: true,
+    required: false,
     description: '검색어',
   })
   @ApiQuery({
