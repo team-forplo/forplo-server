@@ -57,6 +57,7 @@ export class Plogging {
     example:
       'https://forplo-bucket.s3.ap-northeast-2.amazonaws.com/forplo/profile/99e1e2be-8160-4e58-a540-3220a2c1179a.png',
     description: '플로깅 이미지 URL',
+    required: false,
   })
   @Column({ nullable: true })
   imageUrl: string;
@@ -64,6 +65,7 @@ export class Plogging {
   @ApiProperty({
     example: '새벽에 플로깅은 할 짓이 아니다.',
     description: '메모',
+    required: false,
   })
   @Column({ nullable: true })
   memo: string;
