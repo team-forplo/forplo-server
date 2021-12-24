@@ -35,6 +35,6 @@ export class Accessory {
   @Column({ nullable: true, length: 10 })
   hand: string;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ select: false })
   updatedAt: Date;
 }

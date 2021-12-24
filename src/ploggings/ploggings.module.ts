@@ -9,6 +9,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [TypeOrmModule.forFeature([Plogging]), forwardRef(() => AuthModule)],
   controllers: [PloggingsController],
   providers: [PloggingsService],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, PloggingsService],
 })
 export class PloggingsModule {}
