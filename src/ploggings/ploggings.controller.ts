@@ -80,13 +80,13 @@ export class PloggingsController {
   @Get('/my')
   @ApiResponse({
     status: 200,
-    description: '내 플로깅 목록 & 상세 조회 성공',
+    description: '내 플로깅 목록 조회 성공',
   })
-  @ApiOperation({ summary: '내 플로깅 목록 & 상세 조회 ' })
+  @ApiOperation({ summary: '내 플로깅 목록 조회' })
   async findAllMy(@CurrentUser() user: User) {
     const ploggings = await this.ploggingsService.findAllMy(user);
     return {
-      message: '내 플로깅 목록 & 상세 조회 성공',
+      message: '내 플로깅 목록 조회 성공',
       data: ploggings,
     };
   }
@@ -116,13 +116,33 @@ export class PloggingsController {
   })
   @ApiResponse({
     status: 200,
-    description: '피드 목록 & 상세 조회 성공 (공개 설정 된 플로깅 최신순 정렬)',
+    description: '피드 목록 조회 성공 (공개 설정 된 플로깅 최신순 정렬)',
   })
-  @ApiOperation({ summary: '피드 목록 & 상세 조회 ' })
+  @ApiOperation({ summary: '피드 목록 조회 ' })
   async findAll(@Query('location') location: string) {
     const ploggings = await this.ploggingsService.findAll(location);
     return {
-      message: '피드 조회 성공',
+      message: '피드 목록 조회 성공',
+      data: ploggings,
+    };
+  }
+
+  @Get(':id')
+  @ApiParam({
+    name: 'id',
+    example: '1',
+    required: true,
+    description: '플로깅 아이디',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '플로깅 상세 조회 성공',
+  })
+  @ApiOperation({ summary: '플로깅 상세 조회' })
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const ploggings = await this.ploggingsService.findOne(id);
+    return {
+      message: '플로깅 상세 조회 성공',
       data: ploggings,
     };
   }
