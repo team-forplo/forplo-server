@@ -122,6 +122,18 @@ export class PloggingsService {
     };
   }
 
+  async findTotalCount(user: User) {
+    const summary = await this.connection
+      .getRepository(Plogging)
+      .createQueryBuilder('plogging')
+      .where('plogging.userId = :userId', { userId: user.id })
+      .select('COUNT(plogging.id)', 'totalCount')
+      .getRawOne();
+    let { totalCount } = summary || {};
+    totalCount = totalCount ? Number(totalCount) : 0;
+    return totalCount;
+  }
+
   async findOne(id: number) {
     const ploggings = await this.connection
       .getRepository(Plogging)
