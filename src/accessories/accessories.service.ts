@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entities/user.entity';
+import { PloggingsService } from 'src/ploggings/ploggings.service';
 import { Repository } from 'typeorm';
 import { UpdateAccessoryDto } from './dto/update-accessory.dto';
 import { Accessory } from './entities/accessory.entity';
@@ -8,13 +9,19 @@ import { Accessory } from './entities/accessory.entity';
 @Injectable()
 export class AccessoriesService {
   constructor(
+    private readonly ploggingService: PloggingsService,
+
     @InjectRepository(Accessory)
     private accessoryRepository: Repository<Accessory>,
   ) {}
 
   async findOne(user: User) {
     const accessory = await user.accessory;
-    return accessory;
+    const totalCount = await this.ploggingService.findTotalCount(user);
+    return {
+      ...accessory,
+      totalCount,
+    };
   }
 
   async update(user: User, updateAccessoryDto: UpdateAccessoryDto) {
