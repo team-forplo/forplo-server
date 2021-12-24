@@ -1,14 +1,14 @@
-import { map } from 'rxjs/operators';
 import { BookmarkService } from './../bookmark/bookmark.service';
 import { cat2Mapper, cat2ValueMapper } from './mapper/cat2.mapper';
 import { cat1Mapper } from './mapper/cat1.mapper';
 import { areaCodeMapper } from './mapper/area.mapper';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import axios from 'axios';
 import { User } from 'src/auth/entities/user.entity';
 import { Bookmark, BookmarkType } from 'src/bookmark/entities/bookmark.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import axios from 'axios';
+
 @Injectable()
 export class SearchService {
   constructor(
@@ -18,9 +18,7 @@ export class SearchService {
     private bookmarkRepository: Repository<Bookmark>,
   ) {}
 
-  private readonly BASE_URL =
-    'http://api.visitkorea.or.kr/openapi/service/rest';
-  private readonly COMMON_QUERY_SUYEON = `ServiceKey=${process.env.TOUR_API_SERVICE_KEY_SUYEON}&MobileApp=forplo&MobileOS=AND&_type=json`;
+  private readonly BASE_URL = `http://api.visitkorea.or.kr/openapi/service/rest`;
   private readonly COMMON_QUERY = `ServiceKey=${process.env.TOUR_API_SERVICE_KEY}&MobileApp=forplo&MobileOS=AND&_type=json`;
 
   getFormatDate() {
@@ -118,7 +116,7 @@ export class SearchService {
   // 관광지별 혼잡도 예측 집계 데이터 정보 조회
   async tarDecoList(params: any) {
     const tarDecoList = await axios.get(
-      `${this.BASE_URL}/DataLabService/tarDecoList?${this.COMMON_QUERY_SUYEON}`,
+      `${this.BASE_URL}/DataLabService/tarDecoList?${this.COMMON_QUERY}`,
       {
         params,
       },
@@ -129,17 +127,16 @@ export class SearchService {
 
   // 오늘의 추천 여행지 조회
   async findTopList() {
+    // 오늘의 추천 여행지 목록 선택 알고리즘은 추후 변경해야 함.
+    const todayDate = new Date().getDate();
+
     // 지역 기반 관광 정보 조회 (조회순)
     let areaBaseItemList = await this.areaBasedList({
-      numOfRows: 310,
+      numOfRows: 10,
+      pageNo: todayDate,
       arrange: 'P',
     });
     areaBaseItemList = areaBaseItemList.items.item || {};
-
-    // 오늘의 추천 여행지 목록 선택 알고리즘은 추후 변경해야 함.
-    const todayDate = new Date().getDate();
-    const sliceStart = (todayDate - 1) * 10;
-    areaBaseItemList = areaBaseItemList.slice(sliceStart, sliceStart + 10);
 
     // 개요 포함한 목록
     return await Promise.all(
@@ -174,7 +171,6 @@ export class SearchService {
   // 국내여행 상세 조회
   async findDetail(contentid: number, user: User) {
     const bookmark = await this.bookmarkService.findOne(contentid, user);
-    const isBookmark = bookmark ? true : false;
 
     const {
       contenttypeid,
@@ -226,7 +222,7 @@ export class SearchService {
     });
 
     return {
-      isBookmark,
+      isBookmark: bookmark,
       contentid,
       title,
       firstimage,
@@ -246,10 +242,7 @@ export class SearchService {
       throw new BadRequestException('타입은 필수입니다.');
     }
 
-    const bookmarks = await this.bookmarkRepository.find({
-      type,
-      user,
-    });
+    const bookmarks = await this.bookmarkRepository.find({ type, user });
     return await Promise.all(
       bookmarks.map(async (item) => {
         const { contentId } = item;
@@ -261,7 +254,6 @@ export class SearchService {
   // 국내여행/추천코스 검색 목록 단건 조회
   async findOne(contentid: number, user: User) {
     const bookmark = await this.bookmarkService.findOne(contentid, user);
-    const isBookmark = bookmark ? true : false;
 
     const { contenttypeid, title, addr1, firstimage, firstimage2, overview } =
       await this.detailCommon({
@@ -274,7 +266,7 @@ export class SearchService {
       });
 
     return {
-      isBookmark,
+      isBookmark: bookmark,
       contentid,
       contenttypeid,
       title,
@@ -344,7 +336,6 @@ export class SearchService {
         } = item || {};
 
         const bookmark = await this.bookmarkService.findOne(contentid, user);
-        const isBookmark = bookmark ? true : false;
 
         const { overview } = await this.detailCommon({
           contentId: contentid,
@@ -353,7 +344,7 @@ export class SearchService {
 
         if (contenttypeid != 25 && contenttypeid != 32) {
           return {
-            isBookmark,
+            isBookmark: bookmark,
             contentid,
             contenttypeid,
             title,
@@ -377,7 +368,6 @@ export class SearchService {
   // 추천코스 상세 조회
   async findCourseDetail(contentid: number, user: User) {
     const bookmark = await this.bookmarkService.findOne(contentid, user);
-    const isBookmark = bookmark ? true : false;
 
     const { contenttypeid, title, firstimage, firstimage2, cat2, overview } =
       await this.detailCommon({
@@ -393,27 +383,25 @@ export class SearchService {
       contentTypeId: contenttypeid,
     });
 
-    const detailInfo = await this.detailInfo({
+    let detailInfo = await this.detailInfo({
       contentId: contentid,
       contentTypeId: contenttypeid,
     });
-    const subdetailimgList = [];
-    const courseDetailInfos = [];
-    detailInfo.map((item) => {
+
+    detailInfo = detailInfo.map((item) => {
       const { subname, subdetailoverview, subcontentid, subdetailimg } =
         item || {};
 
-      subdetailimgList.push({
+      return {
         subcontentid,
         subdetailimg,
-      });
-      courseDetailInfos.push({
         subname,
         subdetailoverview,
-      });
+      };
     });
+
     return {
-      isBookmark,
+      isBookmark: bookmark,
       contentid,
       title,
       cat2: cat2ValueMapper[cat2],
@@ -422,8 +410,7 @@ export class SearchService {
       overview,
       distance,
       taketime,
-      subdetailimgList,
-      courseDetailInfo: courseDetailInfos,
+      detailInfo,
     };
   }
 
@@ -478,7 +465,6 @@ export class SearchService {
         } = item || {};
 
         const bookmark = await this.bookmarkService.findOne(contentid, user);
-        const isBookmark = bookmark ? true : false;
 
         const { overview } = await this.detailCommon({
           contentId: contentid,
@@ -486,7 +472,7 @@ export class SearchService {
         });
 
         return {
-          isBookmark,
+          isBookmark: bookmark,
           contentid,
           contenttypeid,
           title,
