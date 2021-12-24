@@ -135,7 +135,7 @@ export class PloggingsService {
   }
 
   async findOne(id: number) {
-    const ploggings = await this.connection
+    const plogging = await this.connection
       .getRepository(Plogging)
       .createQueryBuilder('plogging')
       .where('plogging.id = :id', { id: id })
@@ -152,7 +152,11 @@ export class PloggingsService {
       .addSelect('user.nickname')
       .addSelect('user.profileImageUrl')
       .getRawOne();
-    return ploggings;
+
+    if (!plogging) {
+      throw new NotFoundException('플로깅을 찾을 수 없습니다.');
+    }
+    return plogging;
   }
 
   async update(id: number, isPublic: boolean) {
